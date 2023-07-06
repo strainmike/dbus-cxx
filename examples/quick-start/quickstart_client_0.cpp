@@ -12,7 +12,7 @@ int main()
 {
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 
-  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection( DBus::BusType::SESSION );
+  std::shared_ptr<DBus::Connection> connection = dispatcher->create_connection("tcp:host=localhost,port=50655");
 
   //create an object proxy, which stands in for a real object.
   //a proxy exists over the dbus

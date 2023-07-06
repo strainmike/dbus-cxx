@@ -234,7 +234,7 @@ endif( LIBRT )
 # Target for the library
 #
 link_directories( ${sigc_LIBRARY_DIRS} )
-add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
+add_library( dbus-cxx STATIC ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
 target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
 target_include_directories( dbus-cxx INTERFACE
@@ -356,7 +356,7 @@ endif( ENABLE_EXAMPLES )
 #
 if( ENABLE_TOOLS )
     pkg_check_modules( expat REQUIRED expat )
-    add_subdirectory( tools )
+    #add_subdirectory( tools )
 endif( ENABLE_TOOLS )
 
 #

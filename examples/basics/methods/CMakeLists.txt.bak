@@ -1,6 +1,6 @@
 include( ../../examples-common.cmake )
 
-pkg_check_modules( popt REQUIRED popt )
+pkg_check_modules( popt REQUIRED libpopt )
 
 if( ${dbus_FOUND} )
 	message("libdbus found, building libdbus examples")

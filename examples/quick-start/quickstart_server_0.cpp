@@ -8,14 +8,18 @@
 #include <dbus-cxx.h>
 #include <thread>
 #include <chrono>
+#include "Winsock2.h"
 
 double add( double param1, double param2 )      { return param1 + param2; }
 
 int main()
 {
+  WSADATA wsaData;
+  auto wVersionRequested = MAKEWORD(2, 2);
+  WSAStartup(wVersionRequested, &wsaData);
   std::shared_ptr<DBus::Dispatcher> dispatcher = DBus::StandaloneDispatcher::create();
 
-  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection(DBus::BusType::SESSION);
+  std::shared_ptr<DBus::Connection> conn = dispatcher->create_connection("unix:host=localhost,port=50655");
   
   if( conn->request_name( "dbuscxx.quickstart_0.server", DBUSCXX_NAME_FLAG_REPLACE_EXISTING ) != DBus::RequestNameResponse::PrimaryOwner )
       return 1;
@@ -27,6 +31,6 @@ int main()
   object->create_method<double(double,double)>("dbuscxx.Quickstart", "add", sigc::ptr_fun(add) );
 
   std::this_thread::sleep_for(std::chrono::seconds(10));
-
+  WSACleanup();
   return 0;
 }
