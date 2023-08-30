@@ -25,9 +25,9 @@
 #ifndef DBUSCXX_MESSAGEITERATOR_H
 #define DBUSCXX_MESSAGEITERATOR_H
 
-#if defined(__GNUC__) && (__GNUC__ <= 8)
+#if defined(__GNUC__) && (__GNUC__ <= 8) || (_WIN32)
     /*
-    * There seems to be a bug with G++ on versions <= 8 where the operator Variant()
+    * There seems to be a bug with G++ on versions <= 8 and MSVC where the operator Variant()
     * is trying to call the constructor instead of actually calling the operator on
     * the iterator.  This macro works around this bug
     */
@@ -217,7 +217,7 @@ public:
         while( subiter.is_valid() ) {
             //NOTE: we don't need to do subiter.next() here, because
             //operator>> does that for us
-            T val;
+            T val {};
             subiter >> val;
             array.push_back( val );
         }

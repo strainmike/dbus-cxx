@@ -1,0 +1,26 @@
+# escape=`
+
+# Use the latest Windows Server Core 2022 image.
+FROM mcr.microsoft.com/windows/servercore:20H2 as base
+
+ENV ChocolateyUseWindowsCompression false
+RUN powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
+RUN powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+RUN choco install git.install -y --no-progress
+
+RUN choco feature enable -n=allowGlobalConfirmation
+RUN choco install cmake --installargs 'ADD_CMAKE_TO_PATH=""System""'
+RUN choco install visualstudio2022professional
+RUN choco install visualstudio2022-workload-nativedesktop
+RUN choco install python
+RUN python -m pip install pip --upgrade
+RUN pip install --upgrade conan
+RUN conan profile detect --force
+
+COPY CMakeLists.txt /dbus-cxx/CMakeLists.txt
+COPY conanfile.py C:/dbus-cxx/conanfile.py
+RUN conan install C:/dbus-cxx --output-folder=C:/dbus-cxx/build --build=missing -s compiler.cppstd=17
+
+COPY . C:/dbus-cxx
+
+RUN cd C:/dbus-cxx/build && cmake -DCMAKE_TOOLCHAIN_FILE=C:/dbus-cxx/build/conan_toolchain.cmake ..  -G "Visual Studio 17 2022" && cmake --build . --config Release

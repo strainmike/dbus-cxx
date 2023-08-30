@@ -26,14 +26,14 @@
 #include "test_macros.h"
 
 static bool envvars_connect_session_bus() {
-    unsetenv( "DBUS_SESSION_BUS_ADDRESS" );
+    putenv( const_cast<char*>( "DBUS_SESSION_BUS_ADDRESS=" ) );
     std::shared_ptr<DBus::Connection> conn = DBus::Connection::create( DBus::BusType::SESSION );
 
     return !conn->is_valid();
 }
 
 static bool envvars_connect_starter_bus() {
-    unsetenv( "DBUS_STARTER_ADDRESS" );
+    putenv( const_cast<char *>( "DBUS_STARTER_ADDRESS=" ) );
     std::shared_ptr<DBus::Connection> conn = DBus::Connection::create( DBus::BusType::STARTER );
 
     return !conn->is_valid();

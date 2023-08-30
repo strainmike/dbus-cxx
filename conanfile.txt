@@ -1,0 +1,11 @@
+[requires]
+libsigcpp/3.0.7
+expat/2.5.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+libsigcpp*:shared=True
+expat*:shared=True

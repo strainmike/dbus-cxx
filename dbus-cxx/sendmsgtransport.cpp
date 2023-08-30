@@ -27,6 +27,8 @@ static const char* LOGGER_NAME = "DBus.priv.SendmsgTransport";
 #define SEND_BUFFER_SIZE    2048
 #define CONTROL_BUFFER_SIZE 512
 
+// On Windows ancillary data is not supported on sockets opened with SOCK_STREAM.
+// Given this we do not use any of the control buffers under the hood on Windows.
 #ifdef _WIN32
 class SendmsgTransport::priv_data {
 public:
@@ -34,70 +36,45 @@ public:
         m_fd( fd ),
         m_ok( false ),
         rx_capacity( RECEIVE_BUFFER_SIZE ),
-        rx_control_capacity( CONTROL_BUFFER_SIZE ),
-        lpWSARecvMsg( NULL ) {
-        ::memset( &rx_msg, 0, sizeof( WSAMSG ) );
-        ::memset( &tx_msg, 0, sizeof( WSAMSG ) );
+        rx_control_capacity( 0 ) {
         m_sendBuffer.reserve( SEND_BUFFER_SIZE );
     }
 
     ~priv_data() {
-        free( rx_msg.lpBuffers[0].buf );
-        free( rx_msg.Control.buf );
-        free( tx_msg.Control.buf );
+        free( rx_buf.buf );
     }
 
     int m_fd;
     bool m_ok;
     std::vector<uint8_t> m_sendBuffer;
 
-    WSAMSG rx_msg;
     WSABUF rx_buf;
     int rx_capacity;
     int rx_control_capacity;
 
-    WSAMSG tx_msg;
     WSABUF tx_buf;
 
-    LPFN_WSARECVMSG lpWSARecvMsg;
-
     void init() {
-        // Setup the RX data msghdr
-        rx_msg.lpBuffers = &rx_buf;
-        rx_msg.lpBuffers[0].buf = ( PCHAR ) ::malloc( rx_capacity );
-        rx_msg.lpBuffers[0].len = rx_capacity;
-        rx_msg.dwBufferCount = 1;
-        rx_msg.Control.buf = ( PCHAR ) ::malloc( rx_control_capacity );
-        rx_msg.Control.len = rx_control_capacity;
-
-        // Setup the TX data msghdr
-        tx_msg.lpBuffers = &tx_buf;
-        tx_msg.dwBufferCount = 1;
-
-        GUID g = WSAID_WSARECVMSG;
-        DWORD dwBytesReturned = 0;
-
-        if( WSAIoctl( m_fd, SIO_GET_EXTENSION_FUNCTION_POINTER, &g, sizeof( g ), &lpWSARecvMsg, sizeof( lpWSARecvMsg ), &dwBytesReturned, NULL, NULL ) != 0 ) {
-            SIMPLELOGGER_DEBUG( LOGGER_NAME, "Unable to obtain a pointer to WSARecvMsg function" );
-            m_ok = false;
-        }
+        // Setup the RX data
+        rx_buf.buf = ( PCHAR ) ::malloc( rx_capacity );
+        rx_buf.len = rx_capacity;
     }
 
     uint8_t* rx_byte_buf_data() {
-        return reinterpret_cast<uint8_t*>( rx_msg.lpBuffers[0].buf );
+        return reinterpret_cast<uint8_t*>( rx_buf.buf );
     }
 
     ssize_t rx_size() {
-        return rx_msg.lpBuffers[0].len;
+        return rx_buf.len;
     }
 
     ssize_t rx_control_size() {
-        return rx_msg.Control.len;
+        return rx_control_capacity;
     }
 
     void set_rx_capacity( ssize_t capacity ) {
-        free( rx_msg.lpBuffers[0].buf );
-        rx_msg.lpBuffers[0].buf = ( PCHAR ) ::malloc( capacity );
+        free( rx_buf.buf );
+        rx_buf.buf = ( PCHAR ) ::malloc( capacity );
         rx_capacity = capacity;
     }
 
@@ -108,31 +85,30 @@ public:
     int send() {
         tx_buf.buf = ( PCHAR )m_sendBuffer.data();
         tx_buf.len = m_sendBuffer.size();
-        tx_msg.Control.buf = nullptr;
-        tx_msg.Control.len = 0;
 
-        int result = WSASendMsg( m_fd, &tx_msg, 0, NULL, NULL, NULL );
+        DWORD bytes_sent = 0;
+        int result = WSASend( m_fd, &tx_buf, 1, &bytes_sent, 0, NULL, NULL );
 
         if( result == SOCKET_ERROR ) {
             wsa_errno( result );
+            return -1;
         }
 
-        return result;
+        return bytes_sent;
     }
 
     int receive( ssize_t size, ssize_t control_size, ssize_t name_size, DWORD flags ) {
-        rx_msg.lpBuffers[0].len = size;
-        rx_msg.namelen = name_size;
-        rx_msg.Control.len = control_size;
+        rx_buf.len = size;
 
-        rx_msg.dwFlags = flags;
-        int result = lpWSARecvMsg( m_fd, &rx_msg, NULL, NULL, NULL );
+        DWORD bytes_received = 0;
+        int result = WSARecv( m_fd, &rx_buf, 1, &bytes_received, &flags, NULL, NULL );
 
         if( result == SOCKET_ERROR ) {
             wsa_errno( result );
+            return -1;
         }
 
-        return result;
+        return bytes_received;
     }
 };
 #else /* POSIX */

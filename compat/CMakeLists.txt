@@ -13,11 +13,11 @@
 #   along with this software. If not see <http://www.gnu.org/licenses/>.  
 
 set( dbus-cxx-compat-sources
-        compat/fcntl.c
-        compat/getdtablesize.c
-        compat/pipe2.c
-        compat/poll.c
-        compat/posix_win.c
+        fcntl.c
+        getdtablesize.c
+        pipe2.c
+        poll.c
+        posix_win.c
 )
 
 target_sources(dbus-cxx PRIVATE ${dbus-cxx-compat-sources})

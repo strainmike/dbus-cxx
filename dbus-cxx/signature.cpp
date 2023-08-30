@@ -193,7 +193,9 @@ std::shared_ptr<priv::SignatureNode> Signature::create_signature_tree( std::stri
 
             // If we're the ending character of a container,
             // advance the iterator so we go to the next character
-            ending_container = is_ending_container( **it );
+            if ( *it != m_priv->m_signature.cend() ) {
+                ending_container = is_ending_container(**it);
+            }
 
             if( ending_container &&
                 toPush == ContainerType::STRUCT ) {

@@ -48,6 +48,7 @@ public:
 private:
     int write_data_with_newline( std::string data );
     std::string read_data();
+    std::string get_id_as_hex_string();
     std::string encode_as_hex( int num );
     std::vector<uint8_t> hex_to_vector( std::string hexData );
 

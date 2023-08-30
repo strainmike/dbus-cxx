@@ -7,8 +7,27 @@
  ***************************************************************************/
 #include "dispatcher.h"
 
+#ifdef _WIN32
+#include <dbus-cxx/error.h>
+#include <sys/socket.h>
+#endif
+
 namespace DBus {
+Dispatcher::Dispatcher() {
+    #ifdef _WIN32
+    // Initialize Winsock2
+    WSADATA WsaData = { 0 };
+    int result = WSAStartup( MAKEWORD(2, 2), &WsaData );
+    if ( result != 0 ) {
+        throw ErrorDispatcherInitFailed();
+    }
+    #endif
+}
+
 Dispatcher::~Dispatcher() {
+    #ifdef _WIN32
+    WSACleanup();
+    #endif
 }
 
 }

@@ -15,6 +15,11 @@
 #include <regex>
 #include <sstream>
 #include <unistd.h>
+#include <sys/socket.h>
+
+#ifdef _WIN32
+#include <sddl.h>
+#endif
 
 using DBus::priv::SASL;
 
@@ -59,11 +64,11 @@ std::tuple<bool, bool, std::vector<uint8_t>> SASL::authenticate() {
     bool success = false;
     bool negotiatedFD = false;
     std::vector<uint8_t> serverGUID;
-    uid_t uid = getuid();
+
     std::string line;
     std::smatch regex_match;
 
-    write_data_with_newline( "AUTH EXTERNAL " + encode_as_hex( uid ) );
+    write_data_with_newline( "AUTH EXTERNAL " + get_id_as_hex_string() );
 
     line = read_data();
     if( line.length() == 0 ){
@@ -147,6 +152,48 @@ std::string SASL::read_data() {
 
     return line_read;
 }
+
+#ifdef _WIN32
+// DBus on Windows uses Windows SIDs to authenticate clients connecting to the bus.
+std::string SASL::get_id_as_hex_string() {
+   HANDLE TokenHandle = NULL;
+   // Open the access token for the current process
+   if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &TokenHandle)) {
+      return "";
+   }
+
+   // Get the buffer size needed for storing user token info.
+   DWORD TokenUserSize = 0;
+   GetTokenInformation(TokenHandle, TokenUser, NULL, 0, &TokenUserSize);
+   if (TokenUserSize == 0) {
+      CloseHandle(TokenHandle);
+      return "";
+   }
+
+   PTOKEN_USER TokenUserPtr = (PTOKEN_USER)LocalAlloc(LMEM_FIXED, TokenUserSize);
+   std::ostringstream SidInHex;
+   if (GetTokenInformation(TokenHandle, TokenUser, TokenUserPtr, TokenUserSize, &TokenUserSize)
+      && IsValidSid(TokenUserPtr->User.Sid)) {
+      LPTSTR StringSid = NULL;
+
+      if (ConvertSidToStringSidA(TokenUserPtr->User.Sid, &StringSid)) {
+         std::string sid(StringSid);
+         LocalFree(StringSid);
+         for (const char& c : sid) {
+            SidInHex << std::hex << (int)c;
+         }
+      }
+   }
+
+   LocalFree(TokenUserPtr);
+   CloseHandle(TokenHandle);
+   return SidInHex.str();
+}
+#else /* POSIX */
+std::string SASL::get_id_as_hex_string() {
+   return encode_as_hex(getuid());
+}
+#endif
 
 std::string SASL::encode_as_hex( int num ) {
     std::ostringstream out;

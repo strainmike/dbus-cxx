@@ -11,21 +11,23 @@
 #                                                                         
 #   You should have received a copy of the GNU General Public License     
 #   along with this software. If not see <http://www.gnu.org/licenses/>.  
-cmake_minimum_required( VERSION 3.12 )
+cmake_minimum_required( VERSION 3.15 )
 project( dbus-cxx VERSION 2.4.0 )
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-modules")
 
 include( CheckIncludeFiles )
 include( GNUInstallDirs )
+if( NOT CMAKE_TOOLCHAIN_FILE )
 include( FindPkgConfig )
+endif( NOT CMAKE_TOOLCHAIN_FILE )
 include( CheckTypeSize )
 include( CTest )
 include( CheckCXXSymbolExists )
 include( CheckCXXCompilerFlag )
-IF( CMAKE_BUILD_TYPE MATCHES Debug )
+IF( CMAKE_BUILD_TYPE MATCHES Debug AND UNIX )
 include( CodeCoverage )
-ENDIF( CMAKE_BUILD_TYPE MATCHES Debug )
+ENDIF( CMAKE_BUILD_TYPE MATCHES Debug AND UNIX )
 
 # The INCLUDE_VERSION variable is used for includes
 # it is related to, but not the same as, the normal project version
@@ -35,7 +37,14 @@ set( DBUS_CXX_INCLUDE_VERSION 2.0 )
 set( PKG_VERSION ${dbus-cxx_VERSION} )
 
 # Our required dependencies: libsigc++ 3.0
+if( CMAKE_TOOLCHAIN_FILE )
+find_package( sigc++-3 REQUIRED )
+set ( sigc_INCLUDE_DIRS "${sigc++-3_INCLUDE_DIRS}" )
+set ( sigc_LIBRARIES "${sigc++-3_LIBRARIES}" )
+set ( sigc_LDFLAGS "-lsigc-3.0" )
+else()
 pkg_check_modules( sigc REQUIRED sigc++-3.0 )
+endif( CMAKE_TOOLCHAIN_FILE )
 
 #
 # Check our options
@@ -45,13 +54,15 @@ option( ENABLE_TOOLS "Enable dbus-cxx tools" OFF )
 option( ENABLE_GLIB_SUPPORT "Enable GLib support" OFF )
 option( BUILD_SITE "Build the dbus-cxx website reference" OFF )
 option( TOOLS_BUNDLED_CPPGENERATE "Use bundled libcppgenerate" ON )
+if( UNIX )
 option( ENABLE_CODE_COVERAGE_REPORT "Enable code coverage report" OFF )
+endif()
 if( CMAKE_BUILD_TYPE MATCHES Debug )
 option( ENABLE_ASAN "Enable ASAN for finding memory bugs" OFF )
 endif()
-if( BUILD_TESTING )
+if( BUILD_TESTING AND UNIX )
 option( ENABLE_ROBUSTNESS_TESTS "Enable extended robustness tests.  These can be long-running tests." OFF)
-endif( BUILD_TESTING )
+endif( BUILD_TESTING AND UNIX )
 option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applications" OFF )
 option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applications" OFF )
 
@@ -235,7 +246,7 @@ endif( LIBRT )
 # Target for the library
 #
 link_directories( ${sigc_LIBRARY_DIRS} )
-add_library( dbus-cxx SHARED ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
+add_library( dbus-cxx STATIC ${DBUS_CXX_SOURCES} ${DBUS_CXX_HEADERS} )
 set_target_properties( dbus-cxx PROPERTIES VERSION 2.0.0 SOVERSION 2 )
 target_link_libraries( dbus-cxx ${DBUS_CXX_LIBRARIES} )
 target_include_directories( dbus-cxx INTERFACE
@@ -266,6 +277,7 @@ if( WIN32 )
     endif( MSVC AND (MSVC_VERSION GREATER_EQUAL 1914) )
 
     add_subdirectory( compat )
+    include_directories( compat )
 endif( WIN32 )
 
 # Dbus-cxx requires at least C++17 due to libsigc++-3.0
@@ -363,7 +375,12 @@ endif( ENABLE_EXAMPLES )
 # Include the directory for the tools
 #
 if( ENABLE_TOOLS )
+    if( CMAKE_TOOLCHAIN_FILE )
+    find_package( expat REQUIRED )
+    set ( expat_LDFLAGS "-lexpat" )
+    else()
     pkg_check_modules( expat REQUIRED expat )
+    endif( CMAKE_TOOLCHAIN_FILE )
     add_subdirectory( tools )
 endif( ENABLE_TOOLS )
 
@@ -395,7 +412,12 @@ endif( BUILD_SITE )
 # Check if tests are enabled
 #
 if( BUILD_TESTING )
+    if( CMAKE_TOOLCHAIN_FILE )
+    find_package( expat REQUIRED )
+    set ( expat_LDFLAGS "-lexpat" )
+    else()
     pkg_check_modules( expat REQUIRED expat )
+    endif( CMAKE_TOOLCHAIN_FILE )
     add_subdirectory( unit-tests )
     if( ENABLE_TOOLS )
         add_subdirectory( unit-tests/tools-tests )
@@ -438,14 +460,16 @@ message(STATUS "  Build tests ..................... : ${BUILD_TESTING}")
 message(STATUS "  Build tools ..................... : ${ENABLE_TOOLS}")
 message(STATUS "  Use bundled cppgenerate ......... : ${TOOLS_BUNDLED_CPPGENERATE}")
 message(STATUS "  Build website ................... : ${BUILD_SITE}")
+if( UNIX )
 message(STATUS "  Enable code coverage report ..... : ${ENABLE_CODE_COVERAGE_REPORT}")
+endif()
 if( CMAKE_BUILD_TYPE MATCHES Debug )
 message(STATUS "  libasan enabled ................. : ${ENABLE_ASAN}")
 endif()
 message(STATUS "  propagate_const ................. : ${DBUS_CXX_HAS_PROP_CONST}")
-if( BUILD_TESTING )
+if( BUILD_TESTING AND UNIX )
 message(STATUS "  Extended robustness tests ....... : ${ENABLE_ROBUSTNESS_TESTS}")
-endif( BUILD_TESTING )
+endif( BUILD_TESTING AND UNIX )
 
 message(STATUS "Library Support:" )
 message(STATUS "  Qt .............................. : ${ENABLE_QT_SUPPORT}")

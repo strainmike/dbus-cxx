@@ -23,6 +23,7 @@ class Connection;
  */
 class Dispatcher {
 public:
+    Dispatcher();
     virtual ~Dispatcher();
 
     /** @name Managing Connections */

@@ -442,6 +442,7 @@ std::shared_ptr<ReturnMessage> Connection::send_with_reply_blocking( std::shared
             }
 
             std::shared_ptr<Message> incoming = m_priv->m_transport->readMessage();
+            if( incoming )
             {
                 std::ostringstream str;
                 str << incoming.get();

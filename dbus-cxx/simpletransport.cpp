@@ -17,6 +17,7 @@
 #include <memory>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 using DBus::priv::SimpleTransport;
 
