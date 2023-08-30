@@ -18,7 +18,7 @@ RUN pip install --upgrade conan
 RUN conan profile detect --force
 
 COPY CMakeLists.txt /dbus-cxx/CMakeLists.txt
-COPY conanfile.py C:/dbus-cxx/conanfile.py
+COPY conanfile.txt C:/dbus-cxx/conanfile.txt
 RUN conan install C:/dbus-cxx --output-folder=C:/dbus-cxx/build --build=missing -s compiler.cppstd=17
 
 COPY . C:/dbus-cxx

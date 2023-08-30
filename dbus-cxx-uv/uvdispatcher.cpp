@@ -20,10 +20,10 @@
  ***************************************************************************/
 #include <cstring>
 #include <system_error>
-#include <uv.h>
 
 #include <dbus-cxx/connection.h>
 #include <dbus-cxx/dbus-cxx-private.h>
+#include <uv.h>
 
 #include "uvdispatcher.h"
 

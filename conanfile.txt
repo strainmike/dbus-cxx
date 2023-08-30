@@ -1,6 +1,7 @@
 [requires]
 libsigcpp/3.0.7
 expat/2.5.0
+libuv/1.46.0
 
 [generators]
 CMakeDeps
@@ -9,3 +10,4 @@ CMakeToolchain
 [options]
 libsigcpp*:shared=True
 expat*:shared=True
+libuv*:static=True

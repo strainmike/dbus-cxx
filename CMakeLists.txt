@@ -1,16 +1,16 @@
-#   This file is part of the dbus-cxx library.                            
-#                                                                         
-#   The dbus-cxx library is free software; you can redistribute it and/or 
-#   modify it under the terms of the GNU General Public License           
-#   version 3 as published by the Free Software Foundation.               
-#                                                                         
-#   The dbus-cxx library is distributed in the hope that it will be       
-#   useful, but WITHOUT ANY WARRANTY; without even the implied warranty   
-#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU   
-#   General Public License for more details.                              
-#                                                                         
-#   You should have received a copy of the GNU General Public License     
-#   along with this software. If not see <http://www.gnu.org/licenses/>.  
+#   This file is part of the dbus-cxx library.
+#
+#   The dbus-cxx library is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License
+#   version 3 as published by the Free Software Foundation.
+#
+#   The dbus-cxx library is distributed in the hope that it will be
+#   useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+#   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this software. If not see <http://www.gnu.org/licenses/>.
 cmake_minimum_required( VERSION 3.15 )
 project( dbus-cxx VERSION 2.4.0 )
 
@@ -64,7 +64,7 @@ if( BUILD_TESTING AND UNIX )
 option( ENABLE_ROBUSTNESS_TESTS "Enable extended robustness tests.  These can be long-running tests." OFF)
 endif( BUILD_TESTING AND UNIX )
 option( ENABLE_QT_SUPPORT "Build libdbuscxx-qt for integration with Qt applications" OFF )
-option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applications" OFF )
+option( ENABLE_UV_SUPPORT "Build libdbuscxx-uv for integration with libuv applications" ON ) # TODO make these addon different options in conan
 
 #
 # Configure our compile options
@@ -115,7 +115,7 @@ if( ${UNUSED_RESULT} )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-result" )
 endif( ${UNUSED_RESULT} )
 
-# 
+#
 # All sources
 #
 set( DBUS_CXX_SOURCES
@@ -221,11 +221,11 @@ set( DBUS_CXX_HEADERS
     dbus-cxx/multiplereturn.h
 )
 
-set( DBUS_CXX_INCLUDE_DIRECTORIES 
-    ${PROJECT_SOURCE_DIR} 
+set( DBUS_CXX_INCLUDE_DIRECTORIES
+    ${PROJECT_SOURCE_DIR}
     ${PROJECT_BINARY_DIR} )
-include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES} 
-    ${dbus_INCLUDE_DIRS} 
+include_directories( ${DBUS_CXX_INCLUDE_DIRECTORIES}
+    ${dbus_INCLUDE_DIRS}
     ${sigc_INCLUDE_DIRS} )
 
 
@@ -377,7 +377,7 @@ endif( ENABLE_EXAMPLES )
 if( ENABLE_TOOLS )
     if( CMAKE_TOOLCHAIN_FILE )
     find_package( expat REQUIRED )
-    set ( expat_LDFLAGS "-lexpat" )
+    link_directories(${expat_LIBRARIES})
     else()
     pkg_check_modules( expat REQUIRED expat )
     endif( CMAKE_TOOLCHAIN_FILE )
@@ -388,7 +388,7 @@ endif( ENABLE_TOOLS )
 # If we want to build the site, we must have doxygen
 #
 if( BUILD_SITE )
-    find_package( Doxygen 
+    find_package( Doxygen
                   REQUIRED dot )
     file( COPY ${PROJECT_SOURCE_DIR}/doc/
           DESTINATION ${PROJECT_BINARY_DIR}/doc/ )
@@ -414,7 +414,7 @@ endif( BUILD_SITE )
 if( BUILD_TESTING )
     if( CMAKE_TOOLCHAIN_FILE )
     find_package( expat REQUIRED )
-    set ( expat_LDFLAGS "-lexpat" )
+    set ( expat_LDFLAGS ${expat_LIBRARIES_RELEASE})
     else()
     pkg_check_modules( expat REQUIRED expat )
     endif( CMAKE_TOOLCHAIN_FILE )
