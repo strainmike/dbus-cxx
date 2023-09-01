@@ -312,18 +312,20 @@ install( TARGETS dbus-cxx
     EXPORT dbus-cxxTargets
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
+    
 if( NOT CMAKE_TOOLCHAIN_FILE )
-    set( HEADER_INSTALL_LOCATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}/${DIR})
+    set( HEADER_INSTALL_LOCATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION})
 else()
-    set( HEADER_INSTALL_LOCATION include/dbus-cxx/${DIR} )
+    set( HEADER_INSTALL_LOCATION include/dbus-cxx )
 endif( NOT CMAKE_TOOLCHAIN_FILE )
+
 foreach(FILE ${DBUS_CXX_HEADERS} )
     get_filename_component(DIR ${FILE} DIRECTORY)
-    install( FILES ${FILE} DESTINATION ${HEADER_INSTALL_LOCATION} )
+    install( FILES ${FILE} DESTINATION ${HEADER_INSTALL_LOCATION}/${DIR} )
 endforeach()
 install( FILES
     ${PROJECT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
-    DESTINATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}/dbus-cxx )
+    DESTINATION ${HEADER_INSTALL_LOCATION} )
 
 #
 # pkg-config script creation and install
