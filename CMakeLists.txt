@@ -312,9 +312,14 @@ install( TARGETS dbus-cxx
     EXPORT dbus-cxxTargets
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" )
+if( NOT CMAKE_TOOLCHAIN_FILE )
+    set( HEADER_INSTALL_LOCATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}/${DIR})
+else()
+    set( HEADER_INSTALL_LOCATION include/dbus-cxx/${DIR} )
+endif( NOT CMAKE_TOOLCHAIN_FILE )
 foreach(FILE ${DBUS_CXX_HEADERS} )
     get_filename_component(DIR ${FILE} DIRECTORY)
-    install( FILES ${FILE} DESTINATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION}/${DIR} )
+    install( FILES ${FILE} DESTINATION ${HEADER_INSTALL_LOCATION} )
 endforeach()
 install( FILES
     ${PROJECT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
