@@ -18,9 +18,10 @@ RUN pip install --upgrade conan
 RUN conan profile detect --force
 
 COPY CMakeLists.txt /dbus-cxx/CMakeLists.txt
-COPY conanfile.txt C:/dbus-cxx/conanfile.txt
+COPY conanfile.py C:/dbus-cxx/conanfile.py
 RUN conan install C:/dbus-cxx --output-folder=C:/dbus-cxx/build --build=missing -s compiler.cppstd=17
 
 COPY . C:/dbus-cxx
 
 RUN cd C:/dbus-cxx/build && cmake -DCMAKE_TOOLCHAIN_FILE=C:/dbus-cxx/build/conan_toolchain.cmake ..  -G "Visual Studio 17 2022" && cmake --build . --config Release
+RUN conan create C:\dbus-cxx\ -s compiler.cppstd=17
