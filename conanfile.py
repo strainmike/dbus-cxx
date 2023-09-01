@@ -4,7 +4,7 @@ from conan.tools.scm import Git
 
 class DbusCXX(ConanFile):
     name = "dbus-cxx"
-    version = "2.40.0"
+    version = "2.4.0"
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps"
 
