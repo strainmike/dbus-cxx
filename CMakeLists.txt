@@ -316,7 +316,7 @@ install( TARGETS dbus-cxx
 if( NOT CMAKE_TOOLCHAIN_FILE )
     set( HEADER_INSTALL_LOCATION include/dbus-cxx-${DBUS_CXX_INCLUDE_VERSION})
 else()
-    set( HEADER_INSTALL_LOCATION include/dbus-cxx )
+    set( HEADER_INSTALL_LOCATION include )
 endif( NOT CMAKE_TOOLCHAIN_FILE )
 
 foreach(FILE ${DBUS_CXX_HEADERS} )
