@@ -30,8 +30,11 @@ class DbusCXX(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure()
-        cmake.build()
+        cmake.build(build_type="Release")
 
     def package(self):
         cmake = CMake(self)
         cmake.install()
+
+    def package_info(self):
+        self.cpp_info.libs = ["dbus-cxx", "dbus-cxx-uv"]
