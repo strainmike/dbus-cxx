@@ -323,9 +323,17 @@ foreach(FILE ${DBUS_CXX_HEADERS} )
     get_filename_component(DIR ${FILE} DIRECTORY)
     install( FILES ${FILE} DESTINATION ${HEADER_INSTALL_LOCATION}/${DIR} )
 endforeach()
+
+
+if( NOT CMAKE_TOOLCHAIN_FILE )
 install( FILES
     ${PROJECT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
     DESTINATION ${HEADER_INSTALL_LOCATION} )
+else ()
+install( FILES
+    ${PROJECT_BINARY_DIR}/dbus-cxx/dbus-cxx-config.h
+    DESTINATION ${HEADER_INSTALL_LOCATION}/dbus-cxx )
+endif( NOT CMAKE_TOOLCHAIN_FILE )
 
 #
 # pkg-config script creation and install
