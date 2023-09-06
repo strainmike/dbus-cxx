@@ -37,4 +37,5 @@ class DbusCXX(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.libs = ["dbus-cxx", "dbus-cxx-uv"]
+        # order the dependent library first so it links correctly (hopefully)
+        self.cpp_info.libs = ["dbus-cxx-uv", "dbus-cxx"]
