@@ -9,14 +9,7 @@ class DbusCXX(ConanFile):
     generators = "CMakeDeps"
 
     default_options = {"libuv/(*:static": True}
-
-
-    def source(self):
-        git = Git(self)
-        git.clone(url="https://github.com/strainmike/dbus-cxx.git", target=".")
-        # Please, be aware that using the head of the branch instead of an immutable tag
-        # or commit is not a good practice in general
-        git.checkout("conan-windows")
+    exports_sources = "*"
 
     def requirements(self):
         self.requires("libsigcpp/3.0.7")
